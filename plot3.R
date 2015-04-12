@@ -1,39 +1,40 @@
-##-----------------------------------------------------------
-## read from file and preprocess data 
+# --- Plot 3 --------------------------------------------------------
+# read txt datafile from the same directory as this R script, 
+# extract data for 2007-02-01 and 2007-02-02 dates 
+# preprocess data for plotting
+# plot directly to png dev (.png file)  
 
-Sys.setlocale("LC_TIME", "English")
-library("data.table")
+Sys.setlocale("LC_TIME", "English") # to get WeekDays and Month names in English
+library("data.table")  # use data.table functionality for large dataset processing 
 
-    ## set data classes
-colclass<-c( "character", "character", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric" )
+    ## set data classes for reading dataset
+colclass<-c( "character", "character", "numeric", "numeric", 
+             "numeric", "numeric", "numeric", "numeric", "numeric" )
 
     ## read the header
 hdr <-fread("household_power_consumption.txt", header=TRUE, sep=";", nrows=1 )
 
-    ## skip to "1/2/2007" then read 5000 rows (includes our data)
+    ## skip to line containing "1/2/2007" then read 3000 rows (our data + more)
     ## !! important to set "header=FALSE" 
-    ## or the first line of data will be treated as header
-    ## and be missing from the dataset
+    ## otherwise the first line of data will be treated as header
+    ## and get missing from the dataset
     ## using 'skip' arg also skips original header data 
-feb <-fread("household_power_consumption.txt", header=FALSE, sep=";", nrows=5000, skip="1/2/2007", na.strings="?", colClasses=colclass )
+feb <-fread("household_power_consumption.txt", header=FALSE, sep=";", 
+            nrows=5000, skip="1/2/2007", na.strings="?", colClasses=colclass )
 
-    ##  assign header from 'ht' to 'feb'
+    ##  copy header from 'hdr' to 'feb'
 setnames(feb, names(hdr) ) 
 
-    ## convert feb$Date column to "Date" class
-    #####feb$Date<-feb[, as.Date(Date, "%d/%m/%Y")]  
-feb$Date<-as.Date(feb$Date, "%d/%m/%Y")
+feb$Date<-as.Date(feb$Date, "%d/%m/%Y") ## convert feb$Date to "Date" class
 
-    ## leave only our data (Feb 01 and 02)
-feb<-feb[Date<="2007-02-02"]
-
+feb<-feb[Date<="2007-02-02"] ## keep only Feb 01 and 02 data for plotting
 
 ## ----------------------------------------------------------
 
-        ## create separate vector of POSIXlt data&time for X-axis 
-datetime <- strptime( paste (feb$Date,feb$Time, sep=" "), "%Y-%m-%d %H:%M:%S", tz = "EST5EDT" )
+    ## create separate vector of POSIXlt data&time for X-axis 
+datetime <- strptime( paste (feb$Date,feb$Time, sep=" "), "%Y-%m-%d %H:%M:%S" )
 
-        ## send Plot 3 directly to "plot3.png" file 
+    ## send Plot 3 directly to "plot3.png" file 
 png("plot3.png")
     plot(datetime, feb$Sub_metering_1, type="n", xlab="", ylab="Energy sub metering")
     lines(datetime, feb$Sub_metering_1, col="black")
